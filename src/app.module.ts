@@ -3,6 +3,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmpresasModule } from './empresas/empresas.module';
 import { AuthModule } from './auth/auth.module';
+import { UnidadesTransporteModule } from './unidades_transporte/unidades_transporte.module';
+import { ChoferesModule } from './choferes/choferes.module';
+import { ServiciosModule } from './servicios/servicios.module';
+import { DetalleServicioModule } from './detalle_servicio/detalle_servicio.module';
+import { MonitoreoRutaModule } from './monitoreo_ruta/monitoreo_ruta.module';
+import { EvidenciaEntregaModule } from './evidencia_entrega/evidencia_entrega.module';
+import { FacturasModule } from './facturas/facturas.module';
 
 @Module({
   imports: [
@@ -26,6 +33,13 @@ import { AuthModule } from './auth/auth.module';
     }),
     EmpresasModule,
     AuthModule,
+    UnidadesTransporteModule,
+    ChoferesModule,
+    ServiciosModule,
+    DetalleServicioModule,
+    MonitoreoRutaModule,
+    EvidenciaEntregaModule,
+    FacturasModule,
   ],
   controllers: [],
   providers: [],
