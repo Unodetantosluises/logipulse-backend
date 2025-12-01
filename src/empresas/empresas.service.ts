@@ -62,6 +62,14 @@ export class EmpresasService {
     return empresa;
   }
 
+  async findOneByEmailForAuth(correo: string) {
+    return this.empresaRepository
+      .createQueryBuilder('empresa')
+      .where('empresa.correoElectronico = :correo', { correo })
+      .addSelect('empresa.contrasena')
+      .getOne();
+  }
+
   async update(id: number, updateEmpresaDto: UpdateEmpresaDto) {
     try {
       const empresa = await this.empresaRepository.findOneBy({ idEmpresa: id });

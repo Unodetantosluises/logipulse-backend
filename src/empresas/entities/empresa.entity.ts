@@ -35,11 +35,11 @@ export class Empresa {
   @Column({ name: 'correo_electronico', unique: true, length: 100 })
   correoElectronico: string;
 
-  @Column({ name: 'numero_electronico', length: 20, nullable: true })
+  @Column({ name: 'numero_telefonico', length: 20, nullable: true })
   numeroTelefonico: string;
 
   // Por seguridad esta en 'false' para que no devuelva la contraseña en las consultas por defecto
-  @Column({ name: 'cantrasena', select: false })
+  @Column({ name: 'contrasena', select: false })
   contrasena: string;
 
   @Column({ default: true })

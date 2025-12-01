@@ -2,19 +2,20 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmpresasModule } from './empresas/empresas.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env/.env.local', '.env'], // La ruta debe correponder a donde tienes el archivo
+      envFilePath: '.env/.env.local', // La ruta debe correponder a donde tienes el archivo
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get<string>('DATABSE_HOST'),
+        host: config.get<string>('DATABASE_HOST'),
         port: Number(config.get<string>('PORT_NUMBER')), // El puerto de tu base de datos Postgres
         username: config.get<string>('DATABASE_USER'), // Tu usuario de Postgres
         password: config.get<string>('DATABASE_PASSWORD'), // Tu contraseña de Postgres
@@ -24,6 +25,7 @@ import { EmpresasModule } from './empresas/empresas.module';
       }),
     }),
     EmpresasModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
