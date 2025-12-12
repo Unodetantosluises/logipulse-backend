@@ -1,15 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ChoferesService } from './choferes.service';
 import { CreateChofereDto } from './dto/create-chofere.dto';
 import { UpdateChofereDto } from './dto/update-chofere.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('choferes')
 export class ChoferesController {
   constructor(private readonly choferesService: ChoferesService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
-  create(@Body() createChofereDto: CreateChofereDto) {
-    return this.choferesService.create(createChofereDto);
+  crearChofer(@Body() createChofereDto: CreateChofereDto, @Request() req) {
+    const idEmpresaLogueada = req.user.id;
+
+    return this.choferesService.create({
+      ...createChofereDto,
+      id_empresa: idEmpresaLogueada;
+    });
   }
 
   @Get()

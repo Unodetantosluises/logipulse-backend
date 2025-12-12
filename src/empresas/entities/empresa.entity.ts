@@ -1,9 +1,11 @@
+import { Servicio } from 'src/servicios/entities/servicio.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('empresa') // nombre exacto de la tabla
@@ -56,4 +58,8 @@ export class Empresa {
     type: 'timestamp',
   })
   updatedAt: Date;
+
+  // Esta es una propiedad virtual para que NestJS pueda buscar los servicios
+  @OneToMany(() => Servicio, (servicio) => servicio.empresa)
+  servicios: Servicio[];
 }

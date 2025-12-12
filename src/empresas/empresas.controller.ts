@@ -6,14 +6,22 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { EmpresasService } from './empresas.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { UpdateEmpresaDto } from './dto/update-empresa.dto';
-
+import { AuthGuard } from '@nestjs/passport';
 @Controller('empresas')
 export class EmpresasController {
   constructor(private readonly empresasService: EmpresasService) {}
+
+  @UseGuards(AuthGuard('jwt')) // Proteccion de Rutas
+  @Get('perfil')
+  getProfile(@Request() req) {
+    return req.user;
+  }
 
   @Post()
   create(@Body() createEmpresaDto: CreateEmpresaDto) {

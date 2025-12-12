@@ -1,10 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EstadoOperativo } from 'src/common/enums/estado-operativo.enum';
+import { Servicio } from 'src/servicios/entities/servicio.entity';
 
 @Entity('unidades_transporte')
 export class UnidadesTransporte {
   @PrimaryGeneratedColumn({ name: 'id_unidad_transporte' })
   idUnidadTransporte: number;
+
+  @OneToMany(() => Servicio, (servicio) => servicio.unidadTransporte)
+  servicios: Servicio[];
 
   @Column({ name: 'placas', unique: true, length: 20 })
   placas: string;
