@@ -10,7 +10,7 @@ import { JwtStrategy } from './jwt.strategy';
     EmpresasModule,
     JwtModule.register({
       secret: 'PALABRA_SECRETA_SUPER_SEGURA',
-      signOptions: { expiresIn: '12h' },
+      signOptions: { expiresIn: '30m' },
     }),
   ],
   controllers: [AuthController],

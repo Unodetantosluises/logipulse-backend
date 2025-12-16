@@ -23,7 +23,7 @@ export class MonitoreoRuta {
   @Column({ name: 'fecha_hora_registro', type: 'timestamp' })
   fechaHoaraRegistro: Date;
 
-  @Column({ name: 'ubicacion_actual_gps', type: 'string', length: 100 })
+  @Column({ name: 'ubicacion_actual_gps', type: 'varchar', length: 100 })
   ubicacionActualGps: string;
 
   @Column({

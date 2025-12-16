@@ -29,7 +29,7 @@ export class ServiciosController {
   constructor(private readonly serviciosService: ServiciosService) {}
 
   @Post()
-  create(
+  crearServicio(
     @Body() createServicioDto: CreateServicioDto,
     @Req() req: RequestWithUser,
   ) {

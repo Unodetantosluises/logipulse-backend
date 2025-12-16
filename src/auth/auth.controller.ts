@@ -8,6 +8,7 @@ export class AuthController {
 
   @Post('login')
   login(@Body() LoginAuthDto: LoginAuthDto) {
+    console.log('Datos recibidos en el backend:', LoginAuthDto);
     return this.authService.login(LoginAuthDto);
   }
 }
