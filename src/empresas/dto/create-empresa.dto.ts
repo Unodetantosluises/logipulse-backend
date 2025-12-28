@@ -22,7 +22,8 @@ export class CreateEmpresaDto {
   rfc: string;
 
   @IsString()
-  direccion: string;
+  @IsOptional()
+  direccion?: string;
 
   @IsString()
   @IsOptional()
@@ -41,6 +42,6 @@ export class CreateEmpresaDto {
   numeroTelefonico?: string;
 
   @IsString()
-  @Length(6, 50, { message: 'La contraseña debe tener al menos 6 caracteres.' })
+  @Length(8, 50, { message: 'La contraseña debe tener al menos 8 caracteres.' })
   contrasena: string;
 }

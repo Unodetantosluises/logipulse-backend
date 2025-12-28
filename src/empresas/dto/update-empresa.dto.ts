@@ -17,7 +17,7 @@ export class UpdateEmpresaDto {
 
   @IsString()
   @IsOptional()
-  giroEmporesarial?: string;
+  giroEmpresarial?: string;
 
   @IsString()
   @IsOptional()
@@ -45,7 +45,7 @@ export class UpdateEmpresaDto {
 
   @IsString()
   @IsOptional()
-  numeroTelefoncio?: string;
+  numeroTelefonico?: string;
 
   @IsString()
   @IsOptional()

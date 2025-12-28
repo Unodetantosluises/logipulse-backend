@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
+      secretOrKey: 'PALABRA_SECRETA_SUPER_SEGURA',
     });
   }
 
@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   validate(payload: JwtPayload) {
     // Lo que retornes aquí se inyectará en 'req.user' en tus controladores
     return {
-      idEmpresa: payload.id,
+      idEmpresa: payload.idEmpresa,
       email: payload.email,
       nombre: payload.nombre,
     };

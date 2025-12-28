@@ -34,7 +34,7 @@ export class AuthService {
     }
 
     const payload = {
-      id: empresa.idEmpresa,
+      idEmpresa: empresa.idEmpresa,
       email: empresa.correoElectronico,
       nombre: empresa.nombreEmpresa,
     };
