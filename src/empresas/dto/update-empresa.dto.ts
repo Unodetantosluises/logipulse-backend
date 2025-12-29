@@ -46,9 +46,4 @@ export class UpdateEmpresaDto {
   @IsString()
   @IsOptional()
   numeroTelefonico?: string;
-
-  @IsString()
-  @IsOptional()
-  @Length(6, 50, { message: 'La contraseña debe tern al menos 6 caracteres.' })
-  contrasena?: string;
 }

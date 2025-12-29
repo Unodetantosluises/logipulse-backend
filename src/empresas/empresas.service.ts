@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { UpdateEmpresaPasswordDto } from './dto/update-empresa-password.dto';
 
 @Injectable()
 export class EmpresasService {
@@ -80,13 +81,6 @@ export class EmpresasService {
       // Clonar DTO para manipular sin modificar el original
       const updateData = { ...updateEmpresaDto };
 
-      // Soportar ambas variantes de contraseña si existen en el DTO
-      if (updateData.contrasena || updateData.contrasena) {
-        const plain = updateData.contrasena ?? updateData.contrasena;
-        updateData.contrasena = bcrypt.hashSync(plain, 10);
-        delete updateData.contrasena;
-      }
-
       // Aplica la actualizacion
       await this.empresaRepository.update({ idEmpresa: id }, updateData);
 
@@ -100,6 +94,38 @@ export class EmpresasService {
       return {
         ...result,
         message: 'Empresa actualizada correctamente',
+      };
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  async updateProfilePassword(
+    id: number,
+    updateEmpresaPasswordDto: UpdateEmpresaPasswordDto,
+  ) {
+    // Busca la empresa con el id que se hace la peticion
+    try {
+      const empresa = await this.empresaRepository.findOneBy({ idEmpresa: id });
+      if (!empresa) {
+        throw new BadRequestException(`La empresa con ID ${id} no existe.`);
+      }
+
+      // Encriptamos la contraseña directamente
+      const newPasswordHash = bcrypt.hashSync(
+        updateEmpresaPasswordDto.contrasena,
+        10,
+      );
+
+      // Actualizamos en base de datos
+      await this.empresaRepository.update(
+        { idEmpresa: id },
+        { contrasena: newPasswordHash },
+      );
+
+      // Respuesta
+      return {
+        message: 'Contraseña actualizada correctamente',
       };
     } catch (error) {
       this.handleDBErrors(error);

@@ -10,12 +10,23 @@ import { DetalleServicioModule } from './detalle_servicio/detalle_servicio.modul
 import { MonitoreoRutaModule } from './monitoreo_ruta/monitoreo_ruta.module';
 import { EvidenciaEntregaModule } from './evidencia_entrega/evidencia_entrega.module';
 import { FacturasModule } from './facturas/facturas.module';
+import { FileUploadResolver } from './file-upload/file-upload.resolver';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env/.env.local', // La ruta debe correponder a donde tienes el archivo
+    }),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const filename = `${Date.now()})`
+        } 
+      })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -42,6 +53,6 @@ import { FacturasModule } from './facturas/facturas.module';
     FacturasModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [FileUploadResolver],
 })
 export class AppModule {}
