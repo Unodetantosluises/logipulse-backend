@@ -1,4 +1,12 @@
-import { IsString, Length, IsOptional, IsEmail } from 'class-validator';
+import {
+  IsString,
+  Length,
+  IsOptional,
+  IsEmail,
+  IsNotEmpty,
+  MinLength,
+  Matches,
+} from 'class-validator';
 
 export class CreateEmpresaDto {
   @IsString()
@@ -42,6 +50,13 @@ export class CreateEmpresaDto {
   numeroTelefonico?: string;
 
   @IsString()
-  @Length(8, 50, { message: 'La contraseña debe tener al menos 8 caracteres.' })
+  @IsNotEmpty()
+  @MinLength(8, {
+    message: 'la contraseña deb tener al menos ocho caracteres.',
+  })
+  @Matches(/((?=.*\d)(?=.*[a-zA-Z])(?=.*[\W]).{8,})/, {
+    message:
+      'La contraseña es muy debil. Debe tener una letra, un numero y un caracter especial.',
+  })
   contrasena: string;
 }

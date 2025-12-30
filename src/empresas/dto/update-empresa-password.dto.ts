@@ -1,8 +1,14 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 
 export class UpdateEmpresaPasswordDto {
   @IsString()
   @IsNotEmpty()
-  @Length(8, 50, { message: 'La contraseña debe tern al menos 8 caracteres.' })
+  @MinLength(8, {
+    message: 'la contraseña deb tener al menos ocho caracteres.',
+  })
+  @Matches(/((?=.*\d)(?=.*[a-zA-Z])(?=.*[\W]).{8,})/, {
+    message:
+      'La contraseña es muy debil. Debe tener una letra, un numero y un caracter especial.',
+  })
   contrasena: string;
 }

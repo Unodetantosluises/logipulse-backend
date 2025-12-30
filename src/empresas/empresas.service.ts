@@ -3,14 +3,17 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { UpdateEmpresaDto } from './dto/update-empresa.dto';
+import { UpdateEmpresaPasswordDto } from './dto/update-empresa-password.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { UpdateEmpresaPasswordDto } from './dto/update-empresa-password.dto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class EmpresasService {
@@ -129,6 +132,52 @@ export class EmpresasService {
       };
     } catch (error) {
       this.handleDBErrors(error);
+    }
+  }
+
+  async updateLogo(id: number, filename: string) {
+    // Busca la empresa con el id que se hace la peticion
+    try {
+      const empresa = await this.empresaRepository.findOneBy({ idEmpresa: id });
+
+      // Verificamos que la empresa existe
+      if (!empresa) {
+        this.deleteFile(filename);
+        throw new NotFoundException(`La empresa con ID ${id} no existe.`);
+      }
+
+      // Borramos el logo anterios (si existe y no el el deafult)
+      if (empresa.logo && empresa.logo !== 'default-logipulse.png') {
+        this.deleteFile(empresa.logo);
+      }
+
+      // Actualizamos solo el nombre del archivo en la BD
+      await this.empresaRepository.update(
+        { idEmpresa: id },
+        { logo: filename },
+      );
+
+      // Devolvemos la URL
+      return {
+        message: 'Logo actualizado correctamenbte',
+        logoUrl: filename,
+      };
+    } catch (error) {
+      this.deleteFile(filename);
+      this.handleDBErrors(error);
+    }
+  }
+
+  // Metodo Auxiliar para borrar archivos
+  private deleteFile(filename: string) {
+    const filePath = path.join(__dirname, '..', '..', 'uploads', filename);
+
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error(`Error borrando archivo ${filename}:`, err);
+      }
     }
   }
 

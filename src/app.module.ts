@@ -1,6 +1,14 @@
 import { Module } from '@nestjs/common';
+
+// Para las variables de entorno
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+// Para ver los archivos estaticos
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
+// Importación de módulos de la aplicación
 import { EmpresasModule } from './empresas/empresas.module';
 import { AuthModule } from './auth/auth.module';
 import { UnidadesTransporteModule } from './unidades_transporte/unidades_transporte.module';
@@ -10,23 +18,17 @@ import { DetalleServicioModule } from './detalle_servicio/detalle_servicio.modul
 import { MonitoreoRutaModule } from './monitoreo_ruta/monitoreo_ruta.module';
 import { EvidenciaEntregaModule } from './evidencia_entrega/evidencia_entrega.module';
 import { FacturasModule } from './facturas/facturas.module';
-import { FileUploadResolver } from './file-upload/file-upload.resolver';
-import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 
 @Module({
   imports: [
+    // Agrege esto para que la carpeta 'uploads' sea publica
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env/.env.local', // La ruta debe correponder a donde tienes el archivo
-    }),
-    MulterModule.register({
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const filename = `${Date.now()})`
-        } 
-      })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -53,6 +55,6 @@ import { diskStorage } from 'multer';
     FacturasModule,
   ],
   controllers: [],
-  providers: [FileUploadResolver],
+  providers: [],
 })
 export class AppModule {}

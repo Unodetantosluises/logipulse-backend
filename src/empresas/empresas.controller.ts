@@ -8,6 +8,11 @@ import {
   Delete,
   UseGuards,
   ForbiddenException,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { EmpresasService } from './empresas.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
@@ -16,6 +21,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtPayload } from 'src/interfaces/JwtPayload';
 import { UpdateEmpresaPasswordDto } from './dto/update-empresa-password.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('empresas')
 export class EmpresasController {
@@ -57,11 +65,55 @@ export class EmpresasController {
     );
   }
 
-  // Ruta portegida para eliminar el perfil de una empresa autenticada
+  // Ruta protegida para eliminar el perfil de una empresa autenticada
   @UseGuards(AuthGuard('jwt')) // Proteccion de Rutas
   @Delete('perfil')
   deleteProfile(@CurrentUser() user: JwtPayload) {
     return this.empresasService.remove(user.idEmpresa);
+  }
+
+  // Ruta protegida que la emresa autenticada puede subriu su logo
+  @UseGuards(AuthGuard('jwt')) // Proteccion de Rutas
+  @Post('perfil/logo')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      //Configuramos el alamcenamiento
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+      // Filtro para validar el tipo de archivo antes de guardar
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|pdf)$/)) {
+          return cb(
+            new BadRequestException(
+              'Solo se permiten archivos de imagen(jpg, png) o PDF',
+            ),
+            false,
+          );
+        }
+        // Aceptamosd el archivo
+        cb(null, true);
+      },
+    }),
+  )
+  uploadLogo(
+    @CurrentUser() user: JwtPayload,
+    @UploadedFile(
+      // Validacion extra de Nestjs para el tamaño y que el archivo no venga vacio
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    // Si llegamos aqui, el archivo ya se guardo
+    return this.empresasService.updateLogo(user.idEmpresa, file.filename);
   }
 
   // Rutas protegidas para SuperAdministrador(en dessarrollo futuro)

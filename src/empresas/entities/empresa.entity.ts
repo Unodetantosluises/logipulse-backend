@@ -1,3 +1,4 @@
+import { Matches, MinLength } from 'class-validator';
 import { Servicio } from 'src/servicios/entities/servicio.entity';
 import {
   Entity,
@@ -42,7 +43,22 @@ export class Empresa {
 
   // Por seguridad esta en 'false' para que no devuelva la contraseña en las consultas por defecto
   @Column({ name: 'contrasena', select: false })
+  @MinLength(8, {
+    message: 'la contraseña deb tener al menos ocho caracteres.',
+  })
+  @Matches(/((?=.*\d)(?=.*[a-zA-Z])(?=.*[\W]).{8,})/, {
+    message:
+      'La contraseña es muy debil. Debe tener una letra, un numero y un caracter especial.',
+  })
   contrasena: string;
+
+  @Column({
+    name: 'logo',
+    type: 'text',
+    default: 'default-logipulse.png',
+    nullable: true,
+  })
+  logo: string;
 
   @Column({ default: true })
   active: boolean;
