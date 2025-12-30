@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UnidadesTransporteService } from './unidades_transporte.service';
 import { CreateUnidadesTransporteDto } from './dto/create-unidades_transporte.dto';
 import { UpdateUnidadesTransporteDto } from './dto/update-unidades_transporte.dto';
 
 @Controller('unidades-transporte')
 export class UnidadesTransporteController {
-  constructor(private readonly unidadesTransporteService: UnidadesTransporteService) {}
+  constructor(
+    private readonly unidadesTransporteService: UnidadesTransporteService,
+  ) {}
 
   @Post()
   create(@Body() createUnidadesTransporteDto: CreateUnidadesTransporteDto) {
@@ -23,8 +33,14 @@ export class UnidadesTransporteController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUnidadesTransporteDto: UpdateUnidadesTransporteDto) {
-    return this.unidadesTransporteService.update(+id, updateUnidadesTransporteDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUnidadesTransporteDto: UpdateUnidadesTransporteDto,
+  ) {
+    return this.unidadesTransporteService.update(
+      +id,
+      updateUnidadesTransporteDto,
+    );
   }
 
   @Delete(':id')
