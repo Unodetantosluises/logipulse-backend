@@ -1,5 +1,7 @@
 import { Matches, MinLength } from 'class-validator';
 import { Servicio } from 'src/servicios/entities/servicio.entity';
+import { UnidadesTransporte } from 'src/unidades_transporte/entities/unidades_transporte.entity';
+import { Chofer } from 'src/choferes/entities/chofere.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -78,4 +80,15 @@ export class Empresa {
   // Esta es una propiedad virtual para que NestJS pueda buscar los servicios
   @OneToMany(() => Servicio, (servicio) => servicio.empresa)
   servicios: Servicio[];
+
+  // Una empresa puede tener varias unidades de transporte
+  @OneToMany(
+    () => UnidadesTransporte,
+    (unidadTransporte) => unidadTransporte.empresa,
+  )
+  unidadesTransporte: UnidadesTransporte[];
+
+  // Una empresa puede tener varios choferes
+  @OneToMany(() => Chofer, (chofer) => chofer.empresa)
+  choferes: Chofer[];
 }

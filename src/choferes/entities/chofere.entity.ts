@@ -2,24 +2,35 @@ import { Servicio } from 'src/servicios/entities/servicio.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Empresa } from 'src/empresas/entities/empresa.entity';
+import { UnidadesTransporte } from 'src/unidades_transporte/entities/unidades_transporte.entity';
 
 @Entity('choferes')
 export class Chofer {
   @PrimaryGeneratedColumn({ name: 'id_chofer' })
   idChofer: number;
 
-  // Relacion con servicios
-  // Un chofer puede tener multiples Servicios
+  // Relacion con servicios: un chofer puede tener multiples servicios
   @OneToMany(() => Servicio, (servicio) => servicio.chofer)
-  @JoinColumn({ name: 'id_servicio' })
-  servicio: Servicio;
+  servicios: Servicio[];
 
-  @Column({ name: 'id_servicio', nullable: false })
-  idServicio: number;
+  // Relacion con Empresa: muchos choferes pertenecen a una empresa
+  @ManyToOne(() => Empresa, (empresa) => empresa.choferes)
+  @JoinColumn({ name: 'id_empresa' })
+  empresa: Empresa;
+
+  @Column({ name: 'id_empresa', nullable: false })
+  idEmpresa: number;
+
+  // Relacion 1:1 con Unidad de Transporte (opcional)
+  @OneToOne(() => UnidadesTransporte, (unidad) => unidad.chofer)
+  unidadTransporte: UnidadesTransporte;
 
   @Column({ name: 'nombre', length: 150, nullable: false })
   nombre: string;

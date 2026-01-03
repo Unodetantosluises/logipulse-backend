@@ -1,6 +1,16 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+} from 'typeorm';
 import { EstadoOperativo } from 'src/common/enums/estado-operativo.enum';
 import { Servicio } from 'src/servicios/entities/servicio.entity';
+import { Empresa } from 'src/empresas/entities/empresa.entity';
+import { Chofer } from 'src/choferes/entities/chofere.entity';
 
 @Entity('unidades_transporte')
 export class UnidadesTransporte {
@@ -9,6 +19,24 @@ export class UnidadesTransporte {
 
   @OneToMany(() => Servicio, (servicio) => servicio.unidadTransporte)
   servicios: Servicio[];
+
+  // Relación con Empresa (muchas unidades -> 1 empresa)
+  @ManyToOne(() => Empresa, (empresa) => empresa.unidadesTransporte)
+  @JoinColumn({ name: 'id_empresa' })
+  empresa: Empresa;
+
+  @Column({ name: 'id_empresa' })
+  idEmpresa: number;
+
+  // Relación 1:1 con Chofer (una unidad tiene un chofer asignado)
+  @OneToOne(() => Chofer, (chofer) => chofer.unidadTransporte, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'id_chofer' })
+  chofer: Chofer;
+
+  @Column({ name: 'id_chofer', nullable: true })
+  idChofer: number;
 
   @Column({ name: 'placas', unique: true, length: 20 })
   placas: string;
@@ -23,8 +51,10 @@ export class UnidadesTransporte {
   tipoUnidad: string;
 
   @Column({
+    name: 'estado_operativo',
     type: 'enum',
     enum: EstadoOperativo,
+    enumName: 'estado_operativo_enum',
     default: EstadoOperativo.DISPONIBLE,
   })
   estadoOperativo: EstadoOperativo;
@@ -32,6 +62,6 @@ export class UnidadesTransporte {
   @Column({ name: 'capacidad_carga', precision: 10, scale: 2 })
   capacidadCarga: number;
 
-  @Column({ name: 'tiene_refrigeracion', default: true })
+  @Column({ name: 'tiene_refrigeracion', default: false })
   tieneRefrigeracion: boolean;
 }
