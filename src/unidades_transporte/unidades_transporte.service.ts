@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUnidadesTransporteDto } from './dto/create-unidades_transporte.dto';
 import { UpdateUnidadesTransporteDto } from './dto/update-unidades_transporte.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -46,19 +51,26 @@ export class UnidadesTransporteService {
 
   // Obtener todas las unidades de transporte
   async findAll(idEmpresa: number) {
-    return this.unidadesTransporteRepository.find({ where: { idEmpresa } });
+    return this.unidadesTransporteRepository.find({
+      where: { idEmpresa, active: true },
+      relations: ['chofer'],
+    });
   }
 
   // Obtener una unidad de transporte por ID
   async findOne(id: number, idEmpresa: number) {
     // Buscar la unidad de transporte en la base de datos y que pertenezca a la empresa
-    const unidadTransporte = await this.unidadesTransporteRepository.findOneBy({
-      idUnidadTransporte: id,
-      idEmpresa,
+    const unidadTransporte = await this.unidadesTransporteRepository.findOne({
+      where: {
+        idUnidadTransporte: id,
+        idEmpresa: idEmpresa,
+        active: true,
+      },
+      relations: ['chofer'],
     });
     // Si no existe o no pertenece a la empresa, lanzar un error
     if (!unidadTransporte) {
-      throw new Error(
+      throw new NotFoundException(
         `La unidad de transporte con ID ${id} no existe o no pertenece a tu empresa.`,
       );
     }
@@ -72,21 +84,9 @@ export class UnidadesTransporteService {
     updateUnidadesTransporteDto: UpdateUnidadesTransporteDto,
     idEmpresa: number,
   ) {
+    await this.findOne(id, idEmpresa);
+
     try {
-      // Verificar que la unidad de transporte existe y pertenece a la empresa
-      const unidadTransporte =
-        await this.unidadesTransporteRepository.findOneBy({
-          idUnidadTransporte: id,
-          idEmpresa,
-        });
-
-      // Si no existe o no pertenece, lanzar un error
-      if (!unidadTransporte) {
-        throw new Error(
-          `La unidad de transporte con ID ${id} no existe o no pertenece a tu empresa.`,
-        );
-      }
-
       // Actualizar la unidad de transporte
       await this.unidadesTransporteRepository.update(
         { idUnidadTransporte: id },
@@ -94,11 +94,7 @@ export class UnidadesTransporteService {
       );
 
       // Retornar la unidad de transporte actualizada
-      const updated = await this.unidadesTransporteRepository.findOneBy({
-        idUnidadTransporte: id,
-        idEmpresa,
-      });
-
+      const updated = await this.findOne(id, idEmpresa);
       // Retornar el resultado
       return {
         ...updated,
@@ -112,26 +108,16 @@ export class UnidadesTransporteService {
 
   // Eliminar una unidad de transporte por ID
   async remove(id: number, idEmpresa: number) {
+    await this.findOne(id, idEmpresa);
+
     try {
-      const unidadTransporte =
-        await this.unidadesTransporteRepository.findOneBy({
-          idUnidadTransporte: id,
-          idEmpresa,
-        });
+      // Soft delete
+      await this.unidadesTransporteRepository.update(
+        { idUnidadTransporte: id },
+        { active: false, idChofer: null },
+      );
 
-      if (!unidadTransporte) {
-        throw new Error(
-          `La unidad de transporte con ID ${id} no existe o no pertenece a tu empresa.`,
-        );
-      }
-
-      await this.unidadesTransporteRepository.delete({
-        idUnidadTransporte: id,
-      });
-
-      return {
-        message: 'Unidad de transporte eliminada correctamente',
-      };
+      return { message: 'Unidad de transporte eliminada correctamente' };
     } catch (error) {
       this.logger.error(error);
       throw new Error('Error al eliminar la unidad de transporte');
@@ -144,52 +130,71 @@ export class UnidadesTransporteService {
     idChofer: number,
     idEmpresa: number,
   ) {
+    // 1. Validar Unidad
+    // Nota: Tu findOne ya trae la relación 'chofer', así que podemos ver quién la maneja
+    const unidad = await this.findOne(idUnidad, idEmpresa);
+
+    // --- NUEVA VALIDACIÓN: ¿La unidad ya está ocupada? ---
+    // Si la unidad tiene chofer Y ese chofer NO es el mismo que intentamos asignar...
+    if (unidad.idChofer && unidad.idChofer !== idChofer) {
+      // Lanzamos error indicando quién la está ocupando
+      throw new ConflictException(
+        `La unidad ${unidad.placas} ya está ocupada por el chofer ${unidad.chofer?.nombre}. Debes desvincularlo primero.`,
+      );
+    }
+    // -----------------------------------------------------
+
+    // 2. Validar Chofer (que exista, sea de la empresa y esté activo)
+    const chofer = await this.choferRepository.findOneBy({
+      idChofer: idChofer,
+      idEmpresa,
+      active: true,
+    });
+
+    if (!chofer) {
+      throw new NotFoundException(`El chofer con ID ${idChofer} no existe.`);
+    }
+
+    // 3. Validar Disponibilidad del Chofer
+    // Buscamos si este chofer está en OTRA unidad que esté ACTIVA
+    const otraUnidad = await this.unidadesTransporteRepository.findOneBy({
+      idChofer: idChofer,
+      active: true,
+    });
+
+    // Si encontramos una unidad Y no es la misma a la que lo queremos subir...
+    if (otraUnidad && otraUnidad.idUnidadTransporte !== idUnidad) {
+      throw new ConflictException(
+        `El chofer ${chofer.nombre} ya está asignado a la unidad ${otraUnidad.placas} (ID: ${otraUnidad.idUnidadTransporte}).`,
+      );
+    }
+
+    // 4. Asignar
     try {
-      // Verificar que la unidad exista y pertenezca a la empresa
-      const unidad = await this.unidadesTransporteRepository.findOneBy({
-        idUnidadTransporte: idUnidad,
-        idEmpresa,
-      });
-      if (!unidad) {
-        throw new Error(
-          `La unidad con ID ${idUnidad} no existe o no pertenece a tu empresa.`,
-        );
-      }
-
-      // Verificar que el chofer exista y pertenezca a la misma empresa
-      const chofer = await this.choferRepository.findOneBy({
-        idChofer: idChofer,
-        idEmpresa,
-      });
-      if (!chofer) {
-        throw new Error(
-          `El chofer con ID ${idChofer} no existe o no pertenece a tu empresa.`,
-        );
-      }
-
-      // Comprobar si el chofer ya está asignado a otra unidad
-      const otraUnidad = await this.unidadesTransporteRepository.findOneBy({
-        idChofer: idChofer,
-      });
-      if (otraUnidad && otraUnidad.idUnidadTransporte !== idUnidad) {
-        throw new Error(
-          `El chofer con ID ${idChofer} ya está asignado a la unidad ${otraUnidad.idUnidadTransporte}.`,
-        );
-      }
-
-      // Asignar y guardar
-      unidad.idChofer = idChofer;
       unidad.chofer = chofer;
+      unidad.idChofer = idChofer; // Aseguramos consistencia
 
       await this.unidadesTransporteRepository.save(unidad);
 
       return {
-        ...unidad,
-        message: 'Chofer asignado correctamente a la unidad',
+        message: 'Chofer asignado correctamente',
+        unidad: { id: unidad.idUnidadTransporte, chofer: chofer.nombre },
       };
     } catch (error) {
       this.logger.error(error);
-      throw new Error('Error al asignar el chofer a la unidad');
+      throw new Error('Error al eliminar la unidad de transporte');
     }
+  }
+
+  async unassignChofer(idUnidad: number, idEmpresa: number) {
+    // 1. Validar Unidad
+    const unidad = await this.findOne(idUnidad, idEmpresa);
+
+    unidad.chofer = null;
+    unidad.idChofer = null;
+
+    await this.unidadesTransporteRepository.save(unidad);
+
+    return { message: 'Chofer Desvinculado de la unidad' };
   }
 }

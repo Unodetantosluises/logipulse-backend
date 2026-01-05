@@ -15,13 +15,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtPayload } from 'src/interfaces/JwtPayload';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('choferes')
 export class ChoferesController {
   constructor(private readonly choferesService: ChoferesService) {}
 
   // Ruta protegida para crear un chofer
-  @UseGuards(AuthGuard('jwt'))
-  @Post('empresa/:empresaId/chofer')
+  @Post()
   crearChofer(
     @CurrentUser() user: JwtPayload,
     @Body() createChofereDto: CreateChofereDto,
@@ -31,16 +31,14 @@ export class ChoferesController {
   }
 
   // Ruta protegida para obtener todos los choferes
-  @UseGuards(AuthGuard('jwt'))
-  @Get('empresa/choferes')
+  @Get()
   findAll(@CurrentUser() user: JwtPayload) {
     const idEmpresa = user.idEmpresa;
     return this.choferesService.findAll(idEmpresa);
   }
 
   // Ruta protegida para obtener un chofer por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Get('empresa/chofer/:id')
+  @Get(':id')
   findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     const idchofer = parseInt(id, 10);
     const idEmpresa = user.idEmpresa;
@@ -48,8 +46,7 @@ export class ChoferesController {
   }
 
   // Ruta protegida para actualizar un chofer por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('empresa/chofer/:id')
+  @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateChofereDto: UpdateChofereDto,
@@ -60,8 +57,7 @@ export class ChoferesController {
   }
 
   // Ruta protegida para eliminar un chofer por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('empresa/chofer/:id')
+  @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const idEmpresa = user.idEmpresa;
     return this.choferesService.remove(+id, idEmpresa);

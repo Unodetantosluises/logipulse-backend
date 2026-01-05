@@ -33,10 +33,10 @@ export class UnidadesTransporte {
     nullable: true,
   })
   @JoinColumn({ name: 'id_chofer' })
-  chofer: Chofer;
+  chofer: Chofer | null;
 
-  @Column({ name: 'id_chofer', nullable: true })
-  idChofer: number;
+  @Column({ name: 'id_chofer', type: 'number', nullable: true })
+  idChofer: number | null;
 
   @Column({ name: 'placas', unique: true, length: 20 })
   placas: string;
@@ -64,4 +64,7 @@ export class UnidadesTransporte {
 
   @Column({ name: 'tiene_refrigeracion', default: false })
   tieneRefrigeracion: boolean;
+
+  @Column({ name: 'active', type: 'boolean', default: true })
+  active: boolean;
 }

@@ -40,4 +40,7 @@ export class Chofer {
 
   @Column({ name: 'telefono', length: 20 })
   telefono: string;
+
+  @Column({ name: 'active', type: 'boolean', default: true })
+  active: boolean;
 }

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UnidadesTransporteService } from './unidades_transporte.service';
 import { CreateUnidadesTransporteDto } from './dto/create-unidades_transporte.dto';
@@ -15,6 +16,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtPayload } from 'src/interfaces/JwtPayload';
 import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('unidades-transporte')
 export class UnidadesTransporteController {
   constructor(
@@ -22,8 +24,7 @@ export class UnidadesTransporteController {
   ) {}
 
   // Ruta protegida para crear una nueva unidad de transporte
-  @UseGuards(AuthGuard('jwt'))
-  @Post('empresa/:empresaId/unidades-transporte')
+  @Post()
   create(
     @CurrentUser() user: JwtPayload,
     @Body() createUnidadesTransporteDto: CreateUnidadesTransporteDto,
@@ -36,62 +37,63 @@ export class UnidadesTransporteController {
   }
 
   // Ruta protegida para obtener todas las unidades de transporte
-  @UseGuards(AuthGuard('jwt'))
-  @Get('empresa/unidades-transporte')
+  @Get()
   findAll(@CurrentUser() user: JwtPayload) {
-    const idEmpresa = user.idEmpresa;
-    return this.unidadesTransporteService.findAll(idEmpresa);
+    return this.unidadesTransporteService.findAll(user.idEmpresa);
   }
 
   // Ruta protegida para obtener una unidad de transporte por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Get('empresa/unidad-transporte/:id')
-  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    const idUnidadTransporte = parseInt(id, 10);
-    const idEmpresa = user.idEmpresa;
-    return this.unidadesTransporteService.findOne(
-      idUnidadTransporte,
-      idEmpresa,
-    );
+  @Get(':id')
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.unidadesTransporteService.findOne(id, user.idEmpresa);
   }
 
   // Ruta protegida para actualizar una unidad de transporte por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('empresa/unidad-transporte/:id')
+  @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUnidadesTransporteDto: UpdateUnidadesTransporteDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    const idEmpresa = user.idEmpresa;
     return this.unidadesTransporteService.update(
-      +id,
+      id,
       updateUnidadesTransporteDto,
-      idEmpresa,
+      user.idEmpresa,
     );
   }
 
   // Ruta protegida para eliminar una unidad de transporte por ID
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('empresa/unidad-transporte/:id')
-  remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    const idEmpresa = user.idEmpresa;
-    return this.unidadesTransporteService.remove(+id, idEmpresa);
+  @Delete(':id')
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.unidadesTransporteService.remove(id, user.idEmpresa);
   }
 
   // Asignar un chofer a una unidad de transporte
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('empresa/unidad-transporte/:id/chofer/:choferId')
+  @Patch(':id/asignar-chofer/:choferId')
   assignChofer(
-    @Param('id') id: string,
-    @Param('choferId') choferId: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('choferId', ParseIntPipe) choferId: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    const idEmpresa = user.idEmpresa;
     return this.unidadesTransporteService.assignChoferToUnidad(
-      +id,
-      +choferId,
-      idEmpresa,
+      id,
+      choferId,
+      user.idEmpresa,
     );
+  }
+
+  // Desvincular chofer
+  @Patch(':id/desvincular-chofer')
+  unassignChofer(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.unidadesTransporteService.unassignChofer(id, user.idEmpresa);
   }
 }
