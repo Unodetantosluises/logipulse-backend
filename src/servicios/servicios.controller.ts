@@ -4,9 +4,11 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   Patch,
   UseGuards,
+  ParseIntPipe,
+  Delete,
+  Query,
 } from '@nestjs/common';
 import { ServiciosService } from './servicios.service';
 import { CreateServicioDto } from './dto/create-servicio.dto';
@@ -15,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtPayload } from 'src/interfaces/JwtPayload';
+import { FilterServiciosDto } from './dto/filter-servicios.dto';
 
 @UseGuards(AuthGuard('jwt')) // Proteccion de Rutas
 @Controller('servicios')
@@ -22,35 +25,51 @@ export class ServiciosController {
   constructor(private readonly serviciosService: ServiciosService) {}
 
   @Post()
-  crearServicio(
-    @Body()
-    createServicioDto: CreateServicioDto,
+  create(
     @CurrentUser() user: JwtPayload,
+    @Body() createServicioDto: CreateServicioDto,
   ) {
     return this.serviciosService.create(createServicioDto, user.idEmpresa);
   }
 
   @Get()
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.serviciosService.findAll(user.idEmpresa);
+  findAll(
+    @CurrentUser() user: JwtPayload,
+    @Query() filterDto: FilterServiciosDto,
+  ) {
+    return this.serviciosService.findAll(user.idEmpresa, filterDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.serviciosService.findOne(+id, user.idEmpresa);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.serviciosService.findOne(id, user.idEmpresa);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
     @Body() updateServicioDto: UpdateServicioDto,
+  ) {
+    return this.serviciosService.update(id, updateServicioDto, user.idEmpresa);
+  }
+
+  @Patch(':id/cancelar')
+  cancel(
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.serviciosService.update(+id, user.idEmpresa, updateServicioDto);
+    return this.serviciosService.cancel(id, user.idEmpresa);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.serviciosService.remove(+id, user.idEmpresa);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.serviciosService.remove(id, user.idEmpresa);
   }
 }

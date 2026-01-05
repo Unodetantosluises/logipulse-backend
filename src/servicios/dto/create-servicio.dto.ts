@@ -4,12 +4,17 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 
 export class CreateServicioDto {
   @IsNotEmpty()
   @IsDateString()
-  fechaHoraProgramada: Date;
+  fechaHoraProgramada: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  fechaHoraLlegadaEstimada: string;
 
   @IsString()
   @IsNotEmpty()
@@ -30,6 +35,11 @@ export class CreateServicioDto {
   @IsNumber()
   @IsOptional()
   temperaturaMaximaReq?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  costo?: number;
 
   @IsString()
   @IsOptional()

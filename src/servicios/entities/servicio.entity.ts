@@ -17,7 +17,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('servicio')
+@Entity('servicios')
 export class Servicio {
   @PrimaryGeneratedColumn({ name: 'id_servicio' })
   idServicio: number;
@@ -33,20 +33,27 @@ export class Servicio {
 
   @ManyToOne(() => UnidadesTransporte, { nullable: true })
   @JoinColumn({ name: 'id_unidad_transporte' })
-  unidadTransporte: UnidadesTransporte;
+  unidadTransporte: UnidadesTransporte | null;
 
   @Column({ name: 'id_unidad_transporte', nullable: true })
-  idUnidadTransporte: number;
+  idUnidadTransporte: number | null;
 
   @ManyToOne(() => Chofer, { nullable: true })
   @JoinColumn({ name: 'id_chofer' })
-  chofer: Chofer;
+  chofer: Chofer | null;
 
   @Column({ name: 'id_chofer', nullable: true })
-  idChofer: number;
+  idChofer: number | null;
 
   @Column({ name: 'fecha_hora_programada', type: 'timestamp', nullable: true })
   fechaHoraProgramada: Date;
+
+  @Column({
+    name: 'fecha_hora_llegada_estimada',
+    type: 'timestamp',
+    nullable: true,
+  })
+  fechaHoraLlegadaEstimada: Date;
 
   @Column({ name: 'punto_origen', type: 'text' })
   puntoOrigen: string;
@@ -89,6 +96,7 @@ export class Servicio {
   fechaHorarFinalReal: Date;
 
   @Column({
+    name: 'estatus_servicio',
     type: 'enum',
     enum: EstatusServicio,
     default: EstatusServicio.PENDIENTE,
@@ -128,12 +136,21 @@ export class Servicio {
   })
   updatedAt: Date;
 
-  @OneToOne(() => Factura, (factura) => factura.servicio)
+  @OneToOne(() => Factura, (factura) => factura.servicio, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   facturas: Factura[];
 
-  @OneToMany(() => EvidenciaEntrega, (evidencia) => evidencia.servicio)
+  @OneToMany(() => EvidenciaEntrega, (evidencia) => evidencia.servicio, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   evidenciasEntrega: EvidenciaEntrega[];
 
-  @OneToMany(() => MonitoreoRuta, (monitoreo_rute) => monitoreo_rute.servicio)
+  @OneToMany(() => MonitoreoRuta, (monitoreo_rute) => monitoreo_rute.servicio, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   monioreoRuta: MonitoreoRuta[];
 }
