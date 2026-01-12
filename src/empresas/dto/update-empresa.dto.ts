@@ -32,7 +32,7 @@ export class UpdateEmpresaDto {
 
   @IsString()
   @IsOptional()
-  representanteLegaL?: string;
+  representanteLegal?: string;
 
   @IsString()
   @IsOptional()

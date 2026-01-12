@@ -1,5 +1,6 @@
 import { Chofer } from 'src/choferes/entities/chofere.entity';
 import { EstatusServicio } from 'src/common/enums/estatus-servicio.enum';
+import { DetalleServicio } from 'src/detalle_servicio/entities/detalle_servicio.entity';
 import { Empresa } from 'src/empresas/entities/empresa.entity';
 import { EvidenciaEntrega } from 'src/evidencia_entrega/entities/evidencia_entrega.entity';
 import { Factura } from 'src/facturas/entities/factura.entity';
@@ -12,7 +13,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -136,7 +136,7 @@ export class Servicio {
   })
   updatedAt: Date;
 
-  @OneToOne(() => Factura, (factura) => factura.servicio, {
+  @OneToMany(() => Factura, (factura) => factura.servicio, {
     cascade: true,
     onDelete: 'CASCADE',
   })
@@ -153,4 +153,9 @@ export class Servicio {
     onDelete: 'CASCADE',
   })
   monioreoRuta: MonitoreoRuta[];
+
+  @OneToMany(() => DetalleServicio, (detalle) => detalle.servicio, {
+    cascade: true, // Permite guardar detalles al guardar el servicio
+  })
+  detalles: DetalleServicio[];
 }

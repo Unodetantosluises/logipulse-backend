@@ -1,15 +1,34 @@
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
+import { EstadoProducto } from 'src/common/enums/estado-producto.enum';
 
 export class CreateDetalleServicioDto {
+  @IsInt()
+  @IsNotEmpty()
+  idServicio: number; // ¿A qué viaje pertenece este producto?
+
   @IsString()
   @IsNotEmpty()
   nombreProducto: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  cantidadEsperada: number;
+  @IsOptional()
+  @Min(1)
+  cantidadEsperada?: number;
 
   @IsNumber()
-  @IsNotEmpty()
-  cantidadRecibidad: number;
+  @IsOptional()
+  @Min(0)
+  cantidadRecibida?: number;
+
+  @IsOptional()
+  @IsEnum(EstadoProducto)
+  estadoProducto?: EstadoProducto;
 }
